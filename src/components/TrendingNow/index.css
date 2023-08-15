@@ -1,16 +1,35 @@
-.Popular-container {
-  background-color: #131313;
-}
 .logo-image {
   margin: 0px 10px;
   padding-left: 30px;
   padding-right: 20px;
   padding-top: 20px;
   padding-bottom: 20px;
-  height: 170px;
-  width: 255px;
+  height: 170px !important;
+  width: 255px !important;
   border-radius: 8px;
   border: none;
+}
+
+@media screen and (max-width: 768px) {
+  .logo-image {
+    margin: 0px 10px !important;
+    padding-left: 15px !important;
+    padding-right: 10px !important;
+    padding-top: 10px !important;
+    padding-bottom: 10px !important;
+    height: 100px !important;
+    width: 150px !important;
+    border-radius: 8px !important;
+    border: none;
+  }
+}
+
+/* You can change the CSS color to style the Next and 
+Previous Arrow buttons according to your project */
+
+.slick-prev:before,
+.slick-next:before {
+  color: white;
 }
 
 .failure-view-container {
@@ -61,51 +80,4 @@
 .warning {
   font-size: 30px;
   color: #d81f26;
-}
-.popular-result-container {
-  padding: 10px;
-  height: 100%;
-}
-
-.popular-ul-container {
-  display: flex;
-  flex-wrap: wrap;
-  flex-direction: row;
-  justify-content: center;
-  align-items: flex-start;
-  margin: 0px;
-  text-align: center;
-  list-style-type: none;
-}
-.popular-li-item {
-  padding: 5px;
-}
-/* .popular-poster {
-  height: 250px;
-  width: 180px;
-  border-radius: 8px;
-} */
-.popular-poster {
-  height: 100px;
-  width: 90px;
-  border-radius: 8px;
-}
-@media screen and (min-width: 768px) {
-  .popular-poster {
-    height: 250px;
-    width: 180px;
-    border-radius: 8px;
-  }
-  .popular-li-item {
-    padding: 10px;
-  }
-}
-.explore-movies-here {
-  color: #ffffff;
-  padding-left: 30px;
-  margin-bottom: 10px;
-}
-.warning {
-  height: 38px;
-  width: 44px;
 }

@@ -1,91 +1,116 @@
-import {Component} from 'react'
-import Loader from 'react-loader-spinner'
-import Cookies from 'js-cookie'
-
-import NavBar from '../NavBar'
-import MovieItems from '../MovieItems'
-import Footer from '../Footer'
-import FailurePage from '../FailurePage'
-
 import './index.css'
+import Loader from 'react-loader-spinner'
+import {Component} from 'react'
+import Cookies from 'js-cookie'
+import {Link} from 'react-router-dom'
+import Header from '../Header'
+import FailureView from '../FailureView'
+import Footer from '../Footer'
 
-const renderConstraints = {
+const apiStatusConstants = {
   initial: 'INITIAL',
   success: 'SUCCESS',
-  fail: 'FAIL',
-  loading: 'LOADING',
+  failure: 'FAILURE',
+  inProgress: 'IN_PROGRESS',
 }
 
-const isPopular = true
-
 class Popular extends Component {
-  state = {popularMoviesList: [], renderStatus: renderConstraints.initial}
-
-  componentDidMount() {
-    this.getPopularMoviesData()
+  state = {
+    popularData: [],
+    apiStatus: apiStatusConstants.initial,
   }
 
-  getPopularMoviesData = async () => {
-    this.setState({renderStatus: renderConstraints.loading})
+  componentDidMount = () => {
+    this.renderPopularMoviesData()
+  }
+
+  renderPopularMoviesData = async () => {
+    this.setState({
+      apiStatus: apiStatusConstants.inProgress,
+    })
+
     const jwtToken = Cookies.get('jwt_token')
-    const popularMoviesApi = 'https://apis.ccbp.in/movies-app/popular-movies'
+    const url = 'https://apis.ccbp.in/movies-app/popular-movies'
     const options = {
+      headers: {
+        Authorization: `Bearer ${jwtToken}`,
+      },
       method: 'GET',
-      headers: {Authorization: `Bearer ${jwtToken}`},
     }
-    const response = await fetch(popularMoviesApi, options)
-    if (response.ok) {
-      const data = await response.json()
-      const fetchedPopularMoviesData = data.results.map(eachMovie => ({
-        backdropPath: eachMovie.backdrop_path,
-        id: eachMovie.id,
-        posterPath: eachMovie.poster_path,
+
+    const response = await fetch(url, options)
+    console.log(response)
+    if (response.ok === true) {
+      const fetchedData = await response.json()
+      console.log(fetchedData)
+      const updatedData = fetchedData.results.map(eachMovie => ({
         title: eachMovie.title,
+        backdropPath: eachMovie.backdrop_path,
+        overview: eachMovie.overview,
+        id: eachMovie.id,
+        posterUrl: eachMovie.poster_path,
       }))
       this.setState({
-        popularMoviesList: fetchedPopularMoviesData,
-        renderStatus: renderConstraints.success,
+        popularData: updatedData,
+        apiStatus: apiStatusConstants.success,
       })
-    } else {
-      this.setState({renderStatus: renderConstraints.fail})
+    }
+    if (response.status === 401) {
+      this.setState({
+        apiStatus: apiStatusConstants.failure,
+      })
     }
   }
 
-  tryAgainPopularData = () => {
-    this.getPopularMoviesData()
-  }
-
-  renderFailureView = () => <FailurePage tryAgain={this.tryAgainPopularData} />
-
   renderSuccessView = () => {
-    const {popularMoviesList} = this.state
+    const {popularData} = this.state
+
     return (
-      <>
-        <ul className="popular-items">
-          {popularMoviesList.map(eachMovie => (
-            <MovieItems eachMovie={eachMovie} key={eachMovie.id} />
+      <div className="popular-movie-container">
+        <ul className="popular-ul-container">
+          {popularData.map(each => (
+            <Link to={`/movies/${each.id}`} key={each.id} target="blank">
+              <li className="popular-li-item" key={each.id}>
+                <img
+                  className="popular-poster"
+                  src={each.posterUrl}
+                  alt={each.title}
+                />
+              </li>
+            </Link>
           ))}
         </ul>
-        <Footer />
-      </>
+      </div>
     )
   }
 
-  renderLoaderView = () => (
-    <div className="loader-container" testid="loader">
-      <Loader type="TailSpin" color="#D81F26" height={50} width={50} />
+  onRetry = () => {
+    this.renderPopularMoviesData()
+  }
+
+  renderFailureView = () => <FailureView onRetry={this.onRetry} />
+
+  renderLoadingView = () => (
+    <div className="loader-container">
+      <Loader
+        testid="loader"
+        type="TailSpin"
+        height={35}
+        width={380}
+        color="#D81F26"
+      />
     </div>
   )
 
-  renderSwitchView = () => {
-    const {renderStatus} = this.state
-    switch (renderStatus) {
-      case renderConstraints.loading:
-        return this.renderLoaderView()
-      case renderConstraints.success:
+  renderPopularMovies = () => {
+    const {apiStatus} = this.state
+    switch (apiStatus) {
+      case apiStatusConstants.success:
         return this.renderSuccessView()
-      case renderConstraints.fail:
+      case apiStatusConstants.failure:
         return this.renderFailureView()
+      case apiStatusConstants.inProgress:
+        return this.renderLoadingView()
       default:
         return null
     }
@@ -93,9 +118,12 @@ class Popular extends Component {
 
   render() {
     return (
-      <div>
-        <NavBar isPopular={isPopular} />
-        {this.renderSwitchView()}
+      <div className="Popular-container">
+        <Header />
+        <div className="popular-result-container">
+          {this.renderPopularMovies()}
+        </div>
+        <Footer />
       </div>
     )
   }
